@@ -1,0 +1,44 @@
+
+version: "3.9"
+services:
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: manga
+    volumes:
+      - dbdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  backend:
+    build: ./backend
+    env_file: ./.env
+    depends_on:
+      - db
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+      - ./secrets:/run/secrets:ro
+
+  bot:
+    build: ./bot
+    env_file: ./.env
+    depends_on:
+      - backend
+    volumes:
+      - ./bot:/app
+
+  frontend:
+    build: ./frontend
+    env_file: ./.env
+    depends_on:
+      - backend
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app
+
+volumes:
+  dbdata:
